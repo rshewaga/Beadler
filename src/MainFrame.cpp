@@ -10,94 +10,15 @@ MainFrame::MainFrame(const std::string& _title) : wxFrame(nullptr, wxID_ANY, _ti
     wxInitAllImageHandlers();
     
     AddMenuBar();
-    //AddWidgets();
+    AddWidgets();
     //wxStatusBar* statusBar = CreateStatusBar();
     //statusBar->SetDoubleBuffered(true);
-
-    Mk2();
-    
-    //TestWidgets();
-}
-
-void MainFrame::TestWidgets()
-{
-    this->SetSizeHints( wxDefaultSize, wxDefaultSize );
-
-	wxMenuBar* m_menubar1 = new wxMenuBar( 0 );
-	wxMenu* m_menu1 = new wxMenu();
-	wxMenuItem* m_menuItem1;
-	m_menuItem1 = new wxMenuItem( m_menu1, wxID_ANY, wxString( _("New") ) , wxEmptyString, wxITEM_NORMAL );
-	m_menu1->Append( m_menuItem1 );
-
-	m_menubar1->Append( m_menu1, _("File") );
-
-	this->SetMenuBar( m_menubar1 );
-
-	wxStatusBar* m_statusBar1 = this->CreateStatusBar( 1, wxSTB_SIZEGRIP, wxID_ANY );
-    (void)m_statusBar1;
-	wxBoxSizer* bSizer6;
-	bSizer6 = new wxBoxSizer( wxVERTICAL );
-
-	wxSplitterWindow* hSplitter = new wxSplitterWindow( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxSP_3D );
-	hSplitter->SetSashGravity( 0 );
-
-	wxPanel* leftPanel = new wxPanel( hSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	wxPanel* rightPanel = new wxPanel( hSplitter, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL );
-	wxBoxSizer* bSizer8;
-	bSizer8 = new wxBoxSizer( wxVERTICAL );
-
-	wxButton* m_button21 = new wxButton( rightPanel, wxID_ANY, _("MyButton"), wxDefaultPosition, wxDefaultSize, 0 );
-	bSizer8->Add( m_button21, 1, wxALL|wxEXPAND, 5 );
-
-
-	rightPanel->SetSizer( bSizer8 );
-	rightPanel->Layout();
-	bSizer8->Fit( rightPanel );
-	hSplitter->SplitVertically( leftPanel, rightPanel, 250 );
-	bSizer6->Add( hSplitter, 1, wxEXPAND, 5 );
-
-
-	this->SetSizer( bSizer6 );
-	this->Layout();
-
-	this->Centre( wxBOTH );
 }
 
 void MainFrame::AddWidgets()
 {
     // Note that wxWidgets takes care of destroying all heap objects created here,
     // and creating these objects on the heap is the recommended/necessary method!
-
-    mainPanel = std::make_shared<wxPanel>(this);
-    //mainPanel->Bind(wxEVT_PAINT, &MainFrame::OnPaint, this);
-    //mainPanel->Bind(wxEVT_ERASE_BACKGROUND, &MainFrame::OnEraseBG, this);
-    //wxEVT_LEFT_DOWN, wxEVT_LEFT_DOWN, wxEVT_MIDDLE_DOWN, wxEVT_LEFT_DCLICK
-    //mainPanel->Bind(wxEVT_MOTION, &MainFrame::OnMouseEvent, this);
-    mainPanel->SetDoubleBuffered(true);
-    //mainPanel->SetMinSize(wxSize(400,400));
-
-    // Left panel
-    wxPanel* leftPanel = new wxPanel(mainPanel.get());
-    wxButton* button = new wxButton(leftPanel, wxID_ANY, "Load image", wxDefaultPosition, wxDefaultSize, wxEXPAND);//, wxPoint(100,100));
-    button->Bind(wxEVT_BUTTON, &MainFrame::OnLoadImageButton, this);
-
-    //this->Bind(wxEVT_MOTION, &MainFrame::OnMouseEvent, this);
-    
-    spriteScrolledPanel = std::make_shared<SpriteScrolledPanel>(mainPanel.get());
-    spriteScrolledPanel->LoadSprite("X:/Beads/Clean/Abysswolf - X - FFXIII - Lightning.png");
-    spriteScrolledPanel->SetMinSize({100,100});
-
-    wxBoxSizer* hSizer = new wxBoxSizer(wxHORIZONTAL);
-    hSizer->Add(leftPanel, wxSizerFlags().Proportion(0).Expand());
-    hSizer->Add(spriteScrolledPanel.get(), wxSizerFlags().Proportion(1).Expand().Border(wxALL, 25));
-
-    mainPanel->SetSizer(hSizer);
-    hSizer->SetSizeHints(this);
-    //mainPanel->Lower();
-}
-
-void MainFrame::Mk2()
-{
     this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 
 	wxStatusBar* m_statusBar1 = this->CreateStatusBar( 1, wxSTB_SIZEGRIP, wxID_ANY );
@@ -177,15 +98,15 @@ void MainFrame::OnMenuFile(wxCommandEvent &_event)
     }
 }
 
-void MainFrame::OpenFilePicker()
+bool MainFrame::OpenFilePicker()
 {
-    wxFileDialog openFileDialog(mainPanel.get(), "Open image file", "", "", "*.png;*.jpg;*.jpeg;*.bmp;*.gif", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog openFileDialog(this, "Open image file", "", "", "*.png;*.jpg;*.jpeg;*.bmp;*.gif", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     const int pickerResult = openFileDialog.ShowModal();
     if (pickerResult == wxID_CANCEL)
     {
         //wxLogError("Closed file picker");
-        return;
+        return false;
     }
 
     //wxLogStatus("Selected file '%s'.", openFileDialog.GetPath());
@@ -194,9 +115,11 @@ void MainFrame::OpenFilePicker()
     if (!input_stream.IsOk())
     {
         wxLogError("Cannot open file '%s'.", openFileDialog.GetPath());
+        return false;
     }
 
-    spritePanel->LoadSprite(openFileDialog.GetPath().ToStdString());
+    scrolledWindow->LoadSprite(openFileDialog.GetPath().ToStdString());
 
     this->Refresh();
+    return true;
 }

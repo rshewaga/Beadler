@@ -2,7 +2,7 @@
 #include <wx/utils.h>
 #include <string>
 
-SpritePanel::SpritePanel(wxWindow* _parent) : wxPanel(_parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxWANTS_CHARS)
+SpritePanel::SpritePanel(wxWindow* _parent) : wxPanel(_parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)//, wxWANTS_CHARS)
 {
     // wxWANTS_CHARS is passed to the panel constructor so it intercepts navigation keys (tab, arrow keys).
     this->SetBackgroundColour(wxColour(255U,255U,255U,255U));
@@ -11,10 +11,16 @@ SpritePanel::SpritePanel(wxWindow* _parent) : wxPanel(_parent, wxID_ANY, wxDefau
     this->Bind(wxEVT_PAINT, &SpritePanel::OnPaint, this);
     this->Bind(wxEVT_ERASE_BACKGROUND, &SpritePanel::OnEraseBG, this);
     this->Bind(wxEVT_MOTION, &SpritePanel::OnMouseEvent, this);
-    this->Bind(wxEVT_MOUSEWHEEL, &SpritePanel::OnMouseEvent, this);
+    //this->Bind(wxEVT_MOUSEWHEEL, &SpritePanel::OnMouseEvent, this);
     this->Bind(wxEVT_KEY_DOWN, &SpritePanel::OnKeyEvent, this);
 
     drawPos = {0,0};
+}
+
+void SpritePanel::Init(std::shared_ptr<int> _scale)
+{
+    m_scale = _scale;
+    UpdateMinSize();
 }
 
 bool SpritePanel::LoadSprite(const std::filesystem::path &_path)
@@ -59,18 +65,33 @@ void SpritePanel::CalculateMinimumBoards()
                      static_cast<int>(std::ceil(static_cast<float>(loadedImg->GetHeight()) / static_cast<float>(boardSize.GetHeight())))};
 }
 
-void SpritePanel::SetScale(int _scale)
+wxSize SpritePanel::UpdateMinSize()
 {
-    scale = std::clamp(_scale, 1, std::numeric_limits<int>::max());
-
     // +1 added here so the right and bottom edges of the panel can include drawing the minimumBoard's edges.
-    this->SetMinSize({minimumBoards[0] * boardSize.GetWidth() * scale + 1, 
-                      minimumBoards[1] * boardSize.GetHeight() * scale + 1});
+    this->SetMinSize({minimumBoards[0] * boardSize.GetWidth() * *m_scale + 1, 
+                      minimumBoards[1] * boardSize.GetHeight() * *m_scale + 1});
+                      
+    wxLogStatus(wxString::Format("MinSize updated to: (%i, %i)", this->GetMinSize().GetWidth(), this->GetMinSize().GetHeight()));
     
-    // Tell:
-    //  1) the parent wxGridSizer to recenter its child (this)
-    //  2) the wxScrolledWindow to update its scroll bars size/visibility
-    this->GetParent()->GetParent()->Layout();
+    return this->GetMinSize();
+}
+
+void SpritePanel::ApplyPositionDelta(float _x, float _y)
+{
+    // Caching the current drawPos to compare whether any screen movement actually happened.
+    // Used to prevent expensive CalculateNumBoardsHit and redraw when unnecessary.
+    std::array<int, 2> _oldPos = {static_cast<int>(drawPos[0]), static_cast<int>(drawPos[1])};
+
+    drawPos[0] += _x;
+    drawPos[1] += _y;
+    ClampSpritePos();
+
+    // If the movement was large enough to move the sprite as drawn
+    if(static_cast<int>(drawPos[0]) != _oldPos[0] || static_cast<int>(drawPos[1]) != _oldPos[1])
+    {
+        CalculateNumBoardsHit();
+        this->Refresh();
+    }
 }
 
 void SpritePanel::AutoFitCanvas()
@@ -80,10 +101,10 @@ void SpritePanel::AutoFitCanvas()
     // Calculate the canvas scale needed so the # of minimum boards is maximized in
     // the parent panel without the scroll bars being shown.
     // The result is the minimum scale between fitting the minimum boards in width or height.
-    scale = static_cast<float>(scrollableWinSize.GetWidth()) / static_cast<float>(minimumBoards[0]) / static_cast<float>(boardSize.GetWidth());
-    scale = std::min<float>(scale, static_cast<float>(scrollableWinSize.GetHeight()) / static_cast<float>(minimumBoards[1]) / static_cast<float>(boardSize.GetHeight()));
+    *m_scale = static_cast<float>(scrollableWinSize.GetWidth()) / static_cast<float>(minimumBoards[0]) / static_cast<float>(boardSize.GetWidth());
+    *m_scale = std::min<float>(*m_scale, static_cast<float>(scrollableWinSize.GetHeight()) / static_cast<float>(minimumBoards[1]) / static_cast<float>(boardSize.GetHeight()));
 
-    SetScale(scale);
+    UpdateMinSize();
 }
 
 void SpritePanel::CenterSprite()
@@ -101,7 +122,7 @@ void SpritePanel::CenterSprite()
 
 void SpritePanel::ClampSpritePos()
 {
-    // Limit the sprite draw position to within the confines of the # number of boards
+    // Limit the sprite draw position to within the confines of the number of boards drawn
     drawPos[0] = std::clamp(drawPos[0], 0.0f, static_cast<float>(minimumBoards[0] * boardSize.GetWidth() - loadedImg->GetWidth()));
     drawPos[1] = std::clamp(drawPos[1], 0.0f, static_cast<float>(minimumBoards[1] * boardSize.GetHeight() - loadedImg->GetHeight()));
 }
@@ -121,7 +142,7 @@ void SpritePanel::OnPaint(wxPaintEvent &_event)
     if(loadedBMP != nullptr)
     {
         //wxLogStatus("Paint the BMP");
-        dc.SetUserScale(scale, scale);
+        dc.SetUserScale(*m_scale, *m_scale);
         dc.DrawBitmap(*loadedBMP.get(), wxPoint(drawPos[0], drawPos[1]));
     }
 
@@ -138,7 +159,7 @@ void SpritePanel::DrawBoardFills(wxBufferedPaintDC &_dc)
     wxBrush _greyBrush = _dc.GetBrush();
     _greyBrush.SetColour(200,200,200);
 
-    _dc.SetFont(_dc.GetFont().Scaled(scale * 0.3f));
+    _dc.SetFont(_dc.GetFont().Scaled(*m_scale * 0.3f));
 
     for(int row = 0; row < minimumBoards[1]; ++row)
     {
@@ -161,11 +182,11 @@ void SpritePanel::DrawBoardFills(wxBufferedPaintDC &_dc)
                 _dc.SetBrush(_whiteBrush);
             }
 
-            int _drawPosX = column * boardSize.GetWidth() * scale;
-            int _drawPosY = row * boardSize.GetHeight() * scale;
+            int _drawPosX = column * boardSize.GetWidth() * *m_scale;
+            int _drawPosY = row * boardSize.GetHeight() * *m_scale;
             _dc.DrawRectangle(_drawPosX, _drawPosY, 
-                              boardSize.GetWidth() * scale + 1, 
-                              boardSize.GetHeight() * scale + 1);
+                              boardSize.GetWidth() * *m_scale + 1, 
+                              boardSize.GetHeight() * *m_scale + 1);
             _dc.DrawText(wxString::Format(" %i = (%i, %i)", _boardID, row, column),
                          _drawPosX, _drawPosY);
         }
@@ -182,13 +203,13 @@ void SpritePanel::DrawBoardEdges(wxBufferedPaintDC& _dc)
     
     for(int row = 0; row <= minimumBoards[1]; ++row)
     {
-        _dc.DrawLine(0,                                                   row * boardSize.GetHeight() * scale,
-                     minimumBoards[0] * boardSize.GetWidth() * scale + 1, row * boardSize.GetHeight() * scale);
+        _dc.DrawLine(0,                                                   row * boardSize.GetHeight() * *m_scale,
+                     minimumBoards[0] * boardSize.GetWidth() * *m_scale + 1, row * boardSize.GetHeight() * *m_scale);
 
         for(int column = 0; column <= minimumBoards[0]; ++column)
         {
-            _dc.DrawLine(column * boardSize.GetWidth() * scale, 0,
-                         column * boardSize.GetWidth() * scale, minimumBoards[1] * boardSize.GetHeight() * scale + 1);
+            _dc.DrawLine(column * boardSize.GetWidth() * *m_scale, 0,
+                         column * boardSize.GetWidth() * *m_scale, minimumBoards[1] * boardSize.GetHeight() * *m_scale + 1);
         }
     }
 }
@@ -202,33 +223,22 @@ void SpritePanel::OnEraseBG(wxEraseEvent &_event)
 
 void SpritePanel::OnMouseEvent(wxMouseEvent &_event)
 {
+    _event.Skip();
     wxPoint mousePosFrameRelative = this->ScreenToClient(wxGetMousePosition());
-
-    // Scroll wheel zoom
-    if(_event.GetWheelRotation() > 0)
-    {
-        SetScale(scale + 1);
-    }
-    else if (_event.GetWheelRotation() < 0)
-    {
-        SetScale(std::clamp(scale - 1, 1, std::numeric_limits<int>::max()));
-    }
 
     // Left drag move sprite
     if(_event.GetEventType() == wxEVT_MOTION && _event.ButtonIsDown(wxMOUSE_BTN_LEFT))
     {
         wxPoint mouseDelta = mousePosFrameRelative - prevMouseDragPos;
         wxLogStatus(wxString::Format("Mouse delta: (%i, %i)", mouseDelta.x, mouseDelta.y));
-        drawPos[0] += 1.0f / static_cast<float>(scale) * static_cast<float>(mouseDelta.x);
-        drawPos[1] += 1.0f / static_cast<float>(scale) * static_cast<float>(mouseDelta.y);
+        ApplyPositionDelta(1.0f / static_cast<float>(*m_scale) * static_cast<float>(mouseDelta.x),
+                           1.0f / static_cast<float>(*m_scale) * static_cast<float>(mouseDelta.y));
     }
-    ClampSpritePos();
-    CalculateNumBoardsHit();
 
     prevMouseDragPos = mousePosFrameRelative;
 
-    _event.Skip();
-    this->Refresh();
+    //_event.Skip();
+    //this->Refresh();
 }
 
 void SpritePanel::OnKeyEvent(wxKeyEvent &_event)

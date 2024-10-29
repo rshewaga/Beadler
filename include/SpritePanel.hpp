@@ -17,6 +17,12 @@ public:
     SpritePanel(wxWindow* _parent);
 
     /**
+     * @brief Init called from the parent ScrolledWindow
+     * @param _scale Render scale stored in the parent
+     */
+    void Init(std::shared_ptr<int> _scale);
+
+    /**
      * @brief Set the displayed sprite to the given image at the absolute file path.
      * @param _path Absolute path to the image to load
      * @return Success or failure loading the sprite
@@ -82,10 +88,17 @@ public:
     int CalculateNumBoardsHit();
 
     /**
-     * @brief Scale the sprite and entire panel
-     * @param _scale 1 = pixel perfect
+     * @brief Update the minimum size of the panel based on its scale
+     * @return The new minimum size
      */
-    void SetScale(int _scale);
+    wxSize UpdateMinSize();
+
+    /**
+     * @brief Apply a translation to the position
+     * @param _x X position delta, right positive
+     * @param _y Y position delta, down positive
+     */
+    void ApplyPositionDelta(float _x, float _y);
     
     // The loaded sprite in raw wxImage format
     std::shared_ptr<wxImage> loadedImg;
@@ -101,8 +114,7 @@ public:
 private:
     // The previous frame's mouse position when left click dragging
     wxPoint prevMouseDragPos = wxPoint();
-    // Canvas zoom level. 1 = pixel perfect.
-    int scale = 1;
+    
     // The width/height minimum number of boards to fit the sprite, based on sprite dimensions and board dimensions
     std::array<int, 2> minimumBoards = {0,0};
 
@@ -110,4 +122,8 @@ private:
     // ID 0 = top left, ID (minimumBoards[0] * minimumBoards[1]) = bottom right.
     // Left to right then top to bottom.
     std::set<int> boardsHit = std::set<int>();
+
+    // Canvas zoom level. 1 = pixel perfect.
+    // Ownership in the parent.
+    std::shared_ptr<int> m_scale;
 };
