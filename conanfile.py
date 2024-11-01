@@ -13,6 +13,7 @@ class CompressorRecipe(ConanFile):
         self.requires("lyra/1.6.1")
         self.requires("nlohmann_json/3.11.3")
         self.requires("wxwidgets/3.2.6")
+        self.requires("libgit2/1.8.4")
 
     #def configure(self):
         #self.options["qt*"].shared = True

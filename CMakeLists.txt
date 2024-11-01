@@ -29,6 +29,7 @@ find_package(lyra REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(wxWidgets REQUIRED)
+find_package(libgit2 REQUIRED)
 
 #######################################################################################
 # Other files added to a target for visibility
@@ -86,6 +87,7 @@ target_link_libraries(
     spdlog::spdlog
     nlohmann_json::nlohmann_json
     wxWidgets::wxWidgets
+    libgit2::libgit2
 )
 
 

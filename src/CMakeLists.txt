@@ -16,6 +16,9 @@ add_executable(
     ../include/SpriteScrolledPanel.hpp
     ScrolledWindow.cpp
     ../include/ScrolledWindow.hpp
+    ColorDifference.cpp
+    ../include/ColorDifference.hpp
+    ../include/ColorData.hpp
 )
 
 target_include_directories(
