@@ -19,6 +19,10 @@ add_executable(
     ColorDifference.cpp
     ../include/ColorDifference.hpp
     ../include/ColorData.hpp
+    JobsFrame.cpp
+    ../include/JobsFrame.hpp
+    JobManager.cpp
+    ../include/JobManager.hpp
 )
 
 target_include_directories(

@@ -13,6 +13,9 @@ MainFrame::MainFrame(const std::string& _title) : wxFrame(nullptr, wxID_ANY, _ti
     AddWidgets();
     //wxStatusBar* statusBar = CreateStatusBar();
     //statusBar->SetDoubleBuffered(true);
+
+    jobManager = std::make_shared<JobManager>();
+    jobsFrame = std::make_shared<JobsFrame>(this, jobManager);
 }
 
 void MainFrame::AddWidgets()
@@ -71,6 +74,13 @@ void MainFrame::AddMenuBar()
     menuFile->Append(ID_MENU_FILE::EXPORT, "Export...", "Export pattern as .PDF");
     menuFile->Append(ID_MENU_FILE::EXIT, "Exit", "Bye!");
     menuBar->Append(menuFile, "File");
+
+    wxMenu* menuWindows = new wxMenu();
+    menuWindows->Bind(wxEVT_MENU, &MainFrame::OnMenuWindows, this);
+    menuWindows->Append(ID_MENU_WINDOWS::JOBS, "Jobs", "View background jobs");
+    menuBar->Append(menuWindows, "Windows");
+
+    
 }
 
 void MainFrame::OnLoadImageButton(wxCommandEvent& _event)
@@ -94,6 +104,19 @@ void MainFrame::OnMenuFile(wxCommandEvent &_event)
             break;
         case ID_MENU_FILE::EXIT:
             Close();
+            break;
+    }
+}
+
+void MainFrame::OnMenuWindows(wxCommandEvent &_event)
+{
+    switch(_event.GetId())
+    {
+        case ID_MENU_WINDOWS::JOBS:
+            wxFrame* newFrame = new wxFrame(this, wxID_ANY, "Jobs");
+            newFrame->SetClientSize(720,480);
+            newFrame->Center();
+            newFrame->Show();
             break;
     }
 }
