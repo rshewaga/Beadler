@@ -19,7 +19,13 @@ private:
      */
     bool AddJobID(int _jobID);
 
+    /**
+     * @brief wxEVT_CLOSE_WINDOW is caught so the frame isn't destroyed on X, it's just hidden
+     * @param _event
+     */
+    void OnCloseWindow(wxCloseEvent& _event);
+
     std::shared_ptr<JobManager> m_jobManager;   // Global JobManager to watch and display
 
-    std::shared_ptr<wxBoxSizer> m_mainSizer;    // Vertical list of jobs
+    //std::shared_ptr<wxBoxSizer> m_mainSizer;    // Vertical list of jobs
 };

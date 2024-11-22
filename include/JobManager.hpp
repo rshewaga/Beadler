@@ -15,10 +15,11 @@ public:
 
     int m_ID;   // Unique job ID
     std::string m_name;
-    std::jthread m_thread;
+    //std::jthread m_thread;
 
     std::chrono::time_point<std::chrono::system_clock> m_startTime;
     std::chrono::time_point<std::chrono::system_clock> m_endTime;
+    
 };
 
 /**
@@ -29,7 +30,7 @@ class JobManager
 public:
     JobManager();
 
-    std::shared_ptr<const Job> GetJobID(int _jobID);
+    std::shared_ptr<const Job> GetJobByID(int _jobID);
     const std::vector<Job>* GetJobs();
 
 private:

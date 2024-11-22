@@ -79,8 +79,6 @@ void MainFrame::AddMenuBar()
     menuWindows->Bind(wxEVT_MENU, &MainFrame::OnMenuWindows, this);
     menuWindows->Append(ID_MENU_WINDOWS::JOBS, "Jobs", "View background jobs");
     menuBar->Append(menuWindows, "Windows");
-
-    
 }
 
 void MainFrame::OnLoadImageButton(wxCommandEvent& _event)
@@ -113,10 +111,7 @@ void MainFrame::OnMenuWindows(wxCommandEvent &_event)
     switch(_event.GetId())
     {
         case ID_MENU_WINDOWS::JOBS:
-            wxFrame* newFrame = new wxFrame(this, wxID_ANY, "Jobs");
-            newFrame->SetClientSize(720,480);
-            newFrame->Center();
-            newFrame->Show();
+            jobsFrame->Show();
             break;
     }
 }
