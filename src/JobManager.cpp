@@ -8,13 +8,13 @@ JobManager::JobManager()
     m_jobs.emplace_back(m_nextJobID++, "Test job 3");
 }
 
-std::shared_ptr<const Job> JobManager::GetJobByID(int _jobID)
+const Job* JobManager::GetJobByID(int _jobID)
 {
     for(const auto& _job : m_jobs)
     {
         if(_job.m_ID == _jobID)
         {
-            return std::make_shared<const Job>(_job);
+            return &_job;
         }
     }
 

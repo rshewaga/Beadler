@@ -11,9 +11,6 @@ JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager)
 
     m_jobManager = _jobManager;
 
-    //m_mainSizer = std::make_shared<wxBoxSizer>(wxVERTICAL);
-    //SetSizer(m_mainSizer.get());
-
     wxBoxSizer* testing = new wxBoxSizer(wxVERTICAL);
     SetSizer(testing);
 
@@ -29,16 +26,14 @@ JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager)
 
 bool JobsFrame::AddJobID(int _jobID)
 {
-    (void)_jobID;
-
-    std::shared_ptr<const Job> _job = m_jobManager->GetJobByID(_jobID);
+    const Job* _job = m_jobManager->GetJobByID(_jobID);
     if(_job == nullptr)
     {
         return false;
     }
 
     wxStaticText* m_staticText1 = new wxStaticText(this, wxID_ANY, _job->m_name);
-	//m_staticText1->Wrap(-1);
+	m_staticText1->Wrap(-1);
     GetSizer()->Add(m_staticText1, 0, wxALL, 5);
 
     Layout();

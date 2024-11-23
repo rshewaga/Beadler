@@ -26,6 +26,4 @@ private:
     void OnCloseWindow(wxCloseEvent& _event);
 
     std::shared_ptr<JobManager> m_jobManager;   // Global JobManager to watch and display
-
-    //std::shared_ptr<wxBoxSizer> m_mainSizer;    // Vertical list of jobs
 };
