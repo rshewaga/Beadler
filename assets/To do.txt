@@ -2,3 +2,5 @@
 - Implement color difference algorithms
     https://en.wikipedia.org/wiki/Color_difference
 - Flip horizontally and vertically
+- Logger
+- Auto updater

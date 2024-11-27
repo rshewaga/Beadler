@@ -1,7 +1,9 @@
 #pragma once
 
-#include <wx/wx.h>
 #include <JobManager.hpp>
+
+#include <wx/wx.h>
+#include <wx/dataview.h>
 
 /**
  * @brief Window to display parallel jobs
@@ -26,4 +28,5 @@ private:
     void OnCloseWindow(wxCloseEvent& _event);
 
     std::shared_ptr<JobManager> m_jobManager;   // Global JobManager to watch and display
+    std::shared_ptr<wxDataViewListCtrl> m_dataViewListCtrl;
 };
