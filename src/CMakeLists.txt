@@ -23,6 +23,7 @@ add_executable(
     ../include/JobsFrame.hpp
     JobManager.cpp
     ../include/JobManager.hpp
+    ../include/Dispatcher.hpp
 )
 
 target_include_directories(

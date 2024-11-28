@@ -1,8 +1,11 @@
 #pragma once
-#include <wx/wx.h>
 #include <filesystem>
 #include <map>
+
 #include <ColorData.hpp>
+
+#include <wx/wx.h>
+
 
 class App : public wxApp {
 public:

@@ -4,6 +4,8 @@
 
 JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager) : wxFrame(_parent, wxID_ANY, "Jobs")
 {
+    Dispatcher::Get().sink<Event_JobAdded>().connect<&JobsFrame::OnJobAdded>(this);
+
     SetDoubleBuffered(true);
     SetClientSize(720,480);
     //Center();
@@ -63,11 +65,13 @@ JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager)
 
 	this->Centre( wxBOTH );
 
+    /*
     auto _jobs = m_jobManager->GetJobs();
     for(int i = 0; i < _jobs->size(); ++i)
     {
         AddJobID((*_jobs)[i].m_ID);
     }
+    */
 }
 
 bool JobsFrame::AddJobID(int _jobID)
@@ -78,17 +82,12 @@ bool JobsFrame::AddJobID(int _jobID)
         return false;
     }
 
-
     wxVector<wxVariant> _data;
     _data.push_back(wxString(std::to_string(_job->m_ID)));
-    _data.push_back(10);
+    _data.push_back(static_cast<int>(_job->m_progress));
     _data.push_back(wxString(Job::to_string(_job->m_state)));
     _data.push_back(wxString(_job->m_name));
     m_dataViewListCtrl->AppendItem(_data);
-
-    //wxStaticText* m_staticText1 = new wxStaticText(this, wxID_ANY, _job->m_name);
-	//m_staticText1->Wrap(-1);
-    //GetSizer()->Add(m_staticText1, 0, wxALL, 5);
 
     //Layout();
 
@@ -102,4 +101,10 @@ void JobsFrame::OnCloseWindow(wxCloseEvent& _event)
     (void)_event;
 
     Show(false);
+}
+
+
+void JobsFrame::OnJobAdded(const Event_JobAdded& _event)
+{
+    AddJobID(_event.m_jobID);
 }

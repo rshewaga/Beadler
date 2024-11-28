@@ -30,6 +30,7 @@ find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(wxWidgets REQUIRED)
 find_package(libgit2 REQUIRED)
+find_package(EnTT REQUIRED)
 
 #######################################################################################
 # Other files added to a target for visibility
@@ -88,6 +89,7 @@ target_link_libraries(
     nlohmann_json::nlohmann_json
     wxWidgets::wxWidgets
     libgit2::libgit2
+    EnTT::EnTT
 )
 
 

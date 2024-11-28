@@ -34,6 +34,7 @@ bool App::OnInit()
     mainFrame->SetClientSize(1280,720);
     mainFrame->Center();
     mainFrame->Show();
+
     return true;
 }
 
@@ -188,3 +189,4 @@ bool App::LoadColorDatabase()
 
     return _allLoadedSuccessfully;
 }
+

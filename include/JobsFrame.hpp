@@ -27,6 +27,11 @@ private:
      */
     void OnCloseWindow(wxCloseEvent& _event);
 
+    /**
+     * @brief JobManager added a new job
+     */
+    void OnJobAdded(const Event_JobAdded& _event);
+
     std::shared_ptr<JobManager> m_jobManager;   // Global JobManager to watch and display
     std::shared_ptr<wxDataViewListCtrl> m_dataViewListCtrl;
 };

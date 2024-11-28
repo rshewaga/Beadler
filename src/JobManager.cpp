@@ -1,11 +1,10 @@
 #include <JobManager.hpp>
 
+#include <fmt/format.h>
+
 JobManager::JobManager()
 {
     m_jobs.reserve(10);
-    m_jobs.emplace_back(m_nextJobID++, "Test job 1");
-    m_jobs.emplace_back(m_nextJobID++, "Test job 2");
-    m_jobs.emplace_back(m_nextJobID++, "Test job 3");
 }
 
 const Job* JobManager::GetJobByID(int _jobID)
@@ -26,10 +25,26 @@ const std::vector<Job>* JobManager::GetJobs()
     return &m_jobs;
 }
 
+void JobManager::CreateTestJobs()
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        m_jobs.emplace_back(m_nextJobID, fmt::format("Test job ID {}", m_nextJobID));
+        Dispatcher::Get().trigger<Event_JobAdded>(Event_JobAdded(m_nextJobID));
+        m_nextJobID++;
+    }
+
+    m_jobs[0].Begin([]
+    {
+        for(int i = 0; i < 100; ++i)
+            (void)i;
+    });
+}
+
 Job::Job(int _ID, const std::string &_name)
 {
     m_ID = _ID;
-    m_progress = 0;
+    m_progress = 50.0f;
     m_state = Job::STATE::NOT_STARTED;
     m_name = _name;
     m_startTime = std::chrono::system_clock::now();

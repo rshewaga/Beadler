@@ -16,6 +16,7 @@ MainFrame::MainFrame(const std::string& _title) : wxFrame(nullptr, wxID_ANY, _ti
 
     jobManager = std::make_shared<JobManager>();
     jobsFrame = std::make_shared<JobsFrame>(this, jobManager);
+    jobManager->CreateTestJobs();
 }
 
 void MainFrame::AddWidgets()
