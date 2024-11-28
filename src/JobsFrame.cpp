@@ -2,33 +2,30 @@
 
 #include <wx/splitter.h>
 
+enum COLUMNS
+{
+    ID,
+    PROGRESS,
+    STATE,
+    DESCRIPTION
+};
+
 JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager) : wxFrame(_parent, wxID_ANY, "Jobs")
 {
+    m_jobManager = _jobManager;
+    
     Dispatcher::Get().sink<Event_JobAdded>().connect<&JobsFrame::OnJobAdded>(this);
-
-    SetDoubleBuffered(true);
-    SetClientSize(720,480);
-    //Center();
-    //Show();
-
+    Dispatcher::Get().sink<Event_JobStateChanged>().connect<&JobsFrame::OnJobStateChanged>(this);
+    Dispatcher::Get().sink<Event_JobProgressChanged>().connect<&JobsFrame::OnJobProgressChanged>(this);
     this->Bind(wxEVT_CLOSE_WINDOW, &JobsFrame::OnCloseWindow, this);
 
-    m_jobManager = _jobManager;
+    SetupWidgets();
+}
 
-    //wxBoxSizer* testing = new wxBoxSizer(wxVERTICAL);
-    //SetSizer(testing);
-
-	//Layout();
-	//Centre(wxBOTH);
-
-    /*
-    auto _jobs = m_jobManager->GetJobs();
-    for(int i = 0; i < _jobs->size(); ++i)
-    {
-        AddJobID((*_jobs)[i].m_ID);
-    }
-    */
-
+void JobsFrame::SetupWidgets()
+{
+    SetDoubleBuffered(true);
+    SetClientSize(720,480);
     //================
     //this->SetSizeHints( wxDefaultSize, wxDefaultSize );
 
@@ -47,7 +44,7 @@ JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager)
 	m_dataViewListCtrl = std::make_shared<wxDataViewListCtrl>(m_scrolledWindow3, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_ROW_LINES);
 	m_dataViewListCtrl->AppendTextColumn( _("ID"), wxDATAVIEW_CELL_INERT, -1, static_cast<wxAlignment>(wxALIGN_LEFT), wxDATAVIEW_COL_REORDERABLE|wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE );
 	m_dataViewListCtrl->AppendProgressColumn( _("Progress"), wxDATAVIEW_CELL_INERT, -1, static_cast<wxAlignment>(wxALIGN_LEFT), wxDATAVIEW_COL_REORDERABLE|wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE );
-	m_dataViewListCtrl->AppendTextColumn( _("Status"), wxDATAVIEW_CELL_INERT, -1, static_cast<wxAlignment>(wxALIGN_LEFT), wxDATAVIEW_COL_REORDERABLE|wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE );
+	m_dataViewListCtrl->AppendTextColumn( _("State"), wxDATAVIEW_CELL_INERT, -1, static_cast<wxAlignment>(wxALIGN_LEFT), wxDATAVIEW_COL_REORDERABLE|wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE );
 	m_dataViewListCtrl->AppendTextColumn( _("Description"), wxDATAVIEW_CELL_INERT, -1, static_cast<wxAlignment>(wxALIGN_LEFT), wxDATAVIEW_COL_REORDERABLE|wxDATAVIEW_COL_RESIZABLE|wxDATAVIEW_COL_SORTABLE );
 	scrolledSizer->Add(m_dataViewListCtrl.get(), 1, wxALL|wxEXPAND, 0 );
 
@@ -64,14 +61,6 @@ JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager)
 	this->Layout();
 
 	this->Centre( wxBOTH );
-
-    /*
-    auto _jobs = m_jobManager->GetJobs();
-    for(int i = 0; i < _jobs->size(); ++i)
-    {
-        AddJobID((*_jobs)[i].m_ID);
-    }
-    */
 }
 
 bool JobsFrame::AddJobID(int _jobID)
@@ -89,6 +78,8 @@ bool JobsFrame::AddJobID(int _jobID)
     _data.push_back(wxString(_job->m_name));
     m_dataViewListCtrl->AppendItem(_data);
 
+    m_jobIDToRow[_job->m_ID] = m_dataViewListCtrl->GetItemCount() - 1;
+
     //Layout();
 
     return true;
@@ -103,8 +94,22 @@ void JobsFrame::OnCloseWindow(wxCloseEvent& _event)
     Show(false);
 }
 
-
 void JobsFrame::OnJobAdded(const Event_JobAdded& _event)
 {
     AddJobID(_event.m_jobID);
+}
+
+void JobsFrame::OnJobStateChanged(const Event_JobStateChanged &_event)
+{
+    const Job* _job = m_jobManager->GetJobByID(_event.m_jobID);
+
+    m_dataViewListCtrl->SetTextValue(Job::to_string(_job->m_state), m_jobIDToRow[_job->m_ID], COLUMNS::STATE);
+    m_dataViewListCtrl->SetValue(static_cast<int>(_job->m_progress), m_jobIDToRow[_job->m_ID], COLUMNS::PROGRESS);
+}
+
+void JobsFrame::OnJobProgressChanged(const Event_JobProgressChanged &_event)
+{
+    const Job* _job = m_jobManager->GetJobByID(_event.m_jobID);
+
+    m_dataViewListCtrl->SetValue(static_cast<int>(_job->m_progress), m_jobIDToRow[_job->m_ID], COLUMNS::PROGRESS);
 }

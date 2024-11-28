@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include <JobManager.hpp>
 
 #include <wx/wx.h>
@@ -14,6 +16,11 @@ public:
     JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager);
 
 private:
+    /**
+     * @brief Set up the wxWidgets for this frame
+     */
+    void SetupWidgets();
+
     /**
      * @brief Adds a job to the displayed list
      * @param _jobID ID of the job to add
@@ -32,6 +39,18 @@ private:
      */
     void OnJobAdded(const Event_JobAdded& _event);
 
+    /**
+     * @brief A Job has a state change
+     */
+    void OnJobStateChanged(const Event_JobStateChanged& _event);
+    
+    /**
+     * @brief A Job has a progress change
+     */
+    void OnJobProgressChanged(const Event_JobProgressChanged& _event);
+
     std::shared_ptr<JobManager> m_jobManager;   // Global JobManager to watch and display
     std::shared_ptr<wxDataViewListCtrl> m_dataViewListCtrl;
+
+    std::unordered_map<int, int> m_jobIDToRow;  // Maps a job ID to the m_dataViewListCtrl's rows
 };
