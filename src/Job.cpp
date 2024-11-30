@@ -18,6 +18,8 @@ std::string Job::to_string(Job::STATE _state)
             return "not started";
         case Job::STATE::WORKING:
             return "working";
+        case Job::STATE::WAITING:
+            return "waiting";
         case Job::STATE::FAILED:
             return "failed";
         case Job::STATE::FINISHED:

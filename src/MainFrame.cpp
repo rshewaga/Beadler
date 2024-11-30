@@ -16,6 +16,8 @@ MainFrame::MainFrame(const std::string& _title) : wxFrame(nullptr, wxID_ANY, _ti
 
     jobsFrame = std::make_shared<JobsFrame>(this);
     JobManager::Inst().CreateTestJobs();
+
+    scrolledWindow->LoadSprite("C:/Proj/cpp/Beadler/assets/largeSparseTest10Colours.png");
 }
 
 void MainFrame::AddWidgets()
@@ -58,8 +60,6 @@ void MainFrame::AddWidgets()
 	this->Layout();
 
 	this->Centre( wxBOTH );
-
-    scrolledWindow->LoadSprite("X:/Beads/Clean/Abysswolf - X - FFXIII - Lightning.png");
 }
 
 void MainFrame::AddMenuBar()

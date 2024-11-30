@@ -17,6 +17,7 @@ public:
     {
         NOT_STARTED,
         WORKING,
+        WAITING,
         FAILED,
         FINISHED,
         CANCELLED

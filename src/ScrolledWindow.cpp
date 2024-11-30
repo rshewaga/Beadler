@@ -83,7 +83,7 @@ void ScrolledWindow::OnMouseEvent(wxMouseEvent &_event)
     // Left drag move sprite
     if(_event.GetEventType() == wxEVT_MOTION && _event.ButtonIsDown(wxMOUSE_BTN_LEFT))
     {
-        wxLogStatus(wxString::Format("Mouse delta: (%i, %i)", mouseDelta.x, mouseDelta.y));
+        //wxLogStatus(wxString::Format("Mouse delta: (%i, %i)", mouseDelta.x, mouseDelta.y));
         m_spritePanel->ApplyPositionDelta(1.0f / static_cast<float>(*m_scale) * static_cast<float>(mouseDelta.x),
                                           1.0f / static_cast<float>(*m_scale) * static_cast<float>(mouseDelta.y));
     }

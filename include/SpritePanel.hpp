@@ -3,10 +3,15 @@
 #include <filesystem>
 #include <array>
 #include <set>
+#include <atomic>
+#include <mutex>
 
 #include <wx/wx.h>
 #include <wx/dcbuffer.h>
 #include <wx/vscroll.h>
+
+#include <JobManager.hpp>
+#include <Job.hpp>
 
 /**
  * @brief A panel for displaying and moving a sprite in reference to a grid.
@@ -99,6 +104,11 @@ public:
      * @param _y Y position delta, down positive
      */
     void ApplyPositionDelta(float _x, float _y);
+
+    /**
+     * @brief Trigger the boardsHit thread to recalculate which boards are hit
+     */
+    void TriggerCalculateNumBoardsHit();
     
     // The loaded sprite in raw wxImage format
     std::shared_ptr<wxImage> loadedImg;
@@ -109,21 +119,42 @@ public:
     // Stored as float so small mouse movements don't have to move the sprite 1 pixel at minimum.
     std::array<float, 2> drawPos = {0,0};
     // The pixel size of a single pegboard
-    wxSize boardSize = wxSize(50,50);
+    wxSize m_boardSize = wxSize(50,50);
 
 private:
     // The previous frame's mouse position when left click dragging
     wxPoint prevMouseDragPos = wxPoint();
     
     // The width/height minimum number of boards to fit the sprite, based on sprite dimensions and board dimensions
-    std::array<int, 2> minimumBoards = {0,0};
+    std::array<int, 2> m_minimumBoards = {0,0};
 
-    // Stores the IDs of which boards are currently hit by any part of the sprite.
+    // Stores the IDs of which boards are currently hit by any opaque part of the sprite.
     // ID 0 = top left, ID (minimumBoards[0] * minimumBoards[1]) = bottom right.
     // Left to right then top to bottom.
-    std::set<int> boardsHit = std::set<int>();
+    std::set<int> m_boardsHit = std::set<int>();
 
     // Canvas zoom level. 1 = pixel perfect.
     // Ownership in the parent.
     std::shared_ptr<int> m_scale;
+
+    // Flag which triggers the boardsHit thread to recalculate.
+    std::atomic_flag m_needsBoardsHitUpdate;
+
+    // Mutex which protects all data members which are required to CalculateBoardsHit.
+    std::mutex m_hitMutex;
+
+    /**
+     * @brief Thread function to calculate which of the boards are hit by the sprite given its current position.
+     * Lifetime matches each unique loaded image. Checks m_needsBoardsHitUpdate as a flag to start calculating.
+     * Writes to m_boardsHit;
+     * @param _job The Job this function is running on
+     */
+    void Thread_CalculateBoardsHit(Job* _job);
+
+    int m_calculateHitBoardsJobID;
+
+    /**
+     * @brief A Job has a state change
+     */
+    void OnJobStateChanged(const Event_JobStateChanged& _event);
 };

@@ -2,12 +2,33 @@
 
 #include <fmt/format.h>
 
+int JobManager::CreateJob(const std::string &_name)
+{
+    m_jobs.emplace_back(m_nextJobID, _name);
+    Dispatcher::Get().trigger<Event_JobAdded>(Event_JobAdded(m_nextJobID));
+    m_nextJobID++;
+    return m_jobs.back().m_ID;
+}
+
 JobManager::JobManager()
 {
     m_jobs.reserve(10);
 }
 
-const Job* JobManager::GetJobByID(int _jobID)
+Job *JobManager::GetJobByID(int _jobID)
+{
+    for(auto& _job : m_jobs)
+    {
+        if(_job.m_ID == _jobID)
+        {
+            return &_job;
+        }
+    }
+
+    return nullptr;
+}
+
+const Job *JobManager::GetConstJobByID(int _jobID)
 {
     for(const auto& _job : m_jobs)
     {

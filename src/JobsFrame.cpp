@@ -63,7 +63,7 @@ void JobsFrame::SetupWidgets()
 
 bool JobsFrame::AddJobID(int _jobID)
 {
-    const Job* _job = JobManager::Inst().GetJobByID(_jobID);
+    const Job* _job = JobManager::Inst().GetConstJobByID(_jobID);
     if(_job == nullptr)
     {
         return false;
@@ -99,15 +99,17 @@ void JobsFrame::OnJobAdded(const Event_JobAdded& _event)
 
 void JobsFrame::OnJobStateChanged(const Event_JobStateChanged &_event)
 {
-    const Job* _job = JobManager::Inst().GetJobByID(_event.m_jobID);
+    const Job* _job = JobManager::Inst().GetConstJobByID(_event.m_jobID);
 
     m_dataViewListCtrl->SetTextValue(Job::to_string(_job->m_state), m_jobIDToRow[_job->m_ID], COLUMNS::STATE);
     m_dataViewListCtrl->SetValue(static_cast<int>(_job->m_progress), m_jobIDToRow[_job->m_ID], COLUMNS::PROGRESS);
+    Update();   // Refresh UI
 }
 
 void JobsFrame::OnJobProgressChanged(const Event_JobProgressChanged &_event)
 {
-    const Job* _job = JobManager::Inst().GetJobByID(_event.m_jobID);
+    const Job* _job = JobManager::Inst().GetConstJobByID(_event.m_jobID);
 
     m_dataViewListCtrl->SetValue(static_cast<int>(_job->m_progress), m_jobIDToRow[_job->m_ID], COLUMNS::PROGRESS);
+    Update();   // Refresh UI
 }
