@@ -10,10 +10,8 @@ enum COLUMNS
     DESCRIPTION
 };
 
-JobsFrame::JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager) : wxFrame(_parent, wxID_ANY, "Jobs")
+JobsFrame::JobsFrame(wxWindow* _parent) : wxFrame(_parent, wxID_ANY, "Jobs")
 {
-    m_jobManager = _jobManager;
-    
     Dispatcher::Get().sink<Event_JobAdded>().connect<&JobsFrame::OnJobAdded>(this);
     Dispatcher::Get().sink<Event_JobStateChanged>().connect<&JobsFrame::OnJobStateChanged>(this);
     Dispatcher::Get().sink<Event_JobProgressChanged>().connect<&JobsFrame::OnJobProgressChanged>(this);
@@ -65,7 +63,7 @@ void JobsFrame::SetupWidgets()
 
 bool JobsFrame::AddJobID(int _jobID)
 {
-    const Job* _job = m_jobManager->GetJobByID(_jobID);
+    const Job* _job = JobManager::Inst().GetJobByID(_jobID);
     if(_job == nullptr)
     {
         return false;
@@ -101,7 +99,7 @@ void JobsFrame::OnJobAdded(const Event_JobAdded& _event)
 
 void JobsFrame::OnJobStateChanged(const Event_JobStateChanged &_event)
 {
-    const Job* _job = m_jobManager->GetJobByID(_event.m_jobID);
+    const Job* _job = JobManager::Inst().GetJobByID(_event.m_jobID);
 
     m_dataViewListCtrl->SetTextValue(Job::to_string(_job->m_state), m_jobIDToRow[_job->m_ID], COLUMNS::STATE);
     m_dataViewListCtrl->SetValue(static_cast<int>(_job->m_progress), m_jobIDToRow[_job->m_ID], COLUMNS::PROGRESS);
@@ -109,7 +107,7 @@ void JobsFrame::OnJobStateChanged(const Event_JobStateChanged &_event)
 
 void JobsFrame::OnJobProgressChanged(const Event_JobProgressChanged &_event)
 {
-    const Job* _job = m_jobManager->GetJobByID(_event.m_jobID);
+    const Job* _job = JobManager::Inst().GetJobByID(_event.m_jobID);
 
     m_dataViewListCtrl->SetValue(static_cast<int>(_job->m_progress), m_jobIDToRow[_job->m_ID], COLUMNS::PROGRESS);
 }

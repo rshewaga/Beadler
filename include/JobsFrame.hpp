@@ -13,7 +13,7 @@
 class JobsFrame : public wxFrame
 {
 public:
-    JobsFrame(wxWindow* _parent, std::shared_ptr<JobManager> _jobManager);
+    JobsFrame(wxWindow* _parent);
 
 private:
     /**
@@ -49,7 +49,6 @@ private:
      */
     void OnJobProgressChanged(const Event_JobProgressChanged& _event);
 
-    std::shared_ptr<JobManager> m_jobManager;   // Global JobManager to watch and display
     std::shared_ptr<wxDataViewListCtrl> m_dataViewListCtrl;
 
     std::unordered_map<int, int> m_jobIDToRow;  // Maps a job ID to the m_dataViewListCtrl's rows

@@ -46,7 +46,6 @@ private:
     std::shared_ptr<SpritePanel> spritePanel;
 
     std::shared_ptr<JobsFrame> jobsFrame;
-    std::shared_ptr<JobManager> jobManager;
 
     // IDs for File menu bar items
     enum ID_MENU_FILE

@@ -14,9 +14,8 @@ MainFrame::MainFrame(const std::string& _title) : wxFrame(nullptr, wxID_ANY, _ti
     //wxStatusBar* statusBar = CreateStatusBar();
     //statusBar->SetDoubleBuffered(true);
 
-    jobManager = std::make_shared<JobManager>();
-    jobsFrame = std::make_shared<JobsFrame>(this, jobManager);
-    jobManager->CreateTestJobs();
+    jobsFrame = std::make_shared<JobsFrame>(this);
+    JobManager::Inst().CreateTestJobs();
 }
 
 void MainFrame::AddWidgets()
