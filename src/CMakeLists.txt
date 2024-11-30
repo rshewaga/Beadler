@@ -24,6 +24,8 @@ add_executable(
     JobManager.cpp
     ../include/JobManager.hpp
     ../include/Dispatcher.hpp
+    ../include/Job.hpp
+    Job.cpp
 )
 
 target_include_directories(

@@ -33,8 +33,7 @@ void Thing3(Job* _job)
         _job->SetProgress(i);
     }
 
-    _job->m_endTime = std::chrono::system_clock::now();
-    _job->SetState(Job::STATE::FINISHED);
+    _job->End(Job::STATE::FINISHED);
 }
 
 void JobManager::CreateTestJobs()
@@ -44,37 +43,10 @@ void JobManager::CreateTestJobs()
         m_jobs.emplace_back(m_nextJobID, fmt::format("Test job ID {}", m_nextJobID));
         Dispatcher::Get().trigger<Event_JobAdded>(Event_JobAdded(m_nextJobID));
 
-        m_jobs[i].Begin(&Thing3, &(m_jobs[i]));
+        //m_jobs[i].Begin(&Thing3, &(m_jobs[i]));
         
         m_nextJobID++;
     }
-}
 
-Job::Job(int _ID, const std::string &_name)
-{
-    m_ID = _ID;
-    m_progress = 50.0f;
-    m_state = Job::STATE::NOT_STARTED;
-    m_name = _name;
-    m_startTime = std::chrono::system_clock::now();
+    m_jobs[0].Begin(&Thing3, &(m_jobs[0]));
 }
-
-std::string Job::to_string(Job::STATE _state)
-{
-    switch(_state)
-    {
-        case Job::STATE::NOT_STARTED:
-            return "not started";
-        case Job::STATE::WORKING:
-            return "working";
-        case Job::STATE::FAILED:
-            return "failed";
-        case Job::STATE::FINISHED:
-            return "finished";
-        case Job::STATE::CANCELLED:
-            return "cancelled";
-        default:
-            return "ERROR: Conversion from Job::STATE to string not provided!";
-    }
-}
-

@@ -28,15 +28,20 @@ public:
     float m_progress;           // 0 - 100
     std::string m_name;         // Short name of the job
     std::string m_description;  // Long description
-    STATE m_state;
+    STATE m_state;              // Current state
 
     std::jthread m_thread;
 
-    std::chrono::time_point<std::chrono::system_clock> m_startTime;
-    std::chrono::time_point<std::chrono::system_clock> m_endTime;
+    std::chrono::time_point<std::chrono::system_clock> m_startTime; // Timestamp when job was started
+    std::chrono::time_point<std::chrono::system_clock> m_endTime;   // Timestamp when job was ended
 
     static std::string to_string(Job::STATE _state);
 
+    /**
+     * @brief Start the thread with the given function and arguments
+     * @param f The function to run in the thread
+     * @param args The function arguments to pass
+     */
     template<class F, class... Args>
     void Begin(F&& f, Args&&... args)
     {
@@ -52,19 +57,17 @@ public:
      * @brief Update the state and notify
      * @param _state The new state
      */
-    void SetState(STATE _state)
-    {
-        m_state = _state;
-        Dispatcher::Get().trigger<Event_JobStateChanged>(Event_JobStateChanged(m_ID));
-    }
+    void SetState(STATE _state);
 
     /**
      * @brief Update the progress and notify
      * @param _progress The new completion progress [0-100]
      */
-    void SetProgress(float _progress)
-    {
-        m_progress = std::clamp<float>(_progress, 0.0f, 100.0f);
-        Dispatcher::Get().trigger<Event_JobProgressChanged>(Event_JobProgressChanged(m_ID));
-    }
+    void SetProgress(float _progress);
+
+    /**
+     * @brief End the job with the given state
+     * @param _endState Ideally CANCELLED, FINISHED, or FAILED
+     */
+    void End(STATE _endState);
 };
