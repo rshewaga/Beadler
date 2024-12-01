@@ -151,7 +151,8 @@ private:
      */
     void Thread_CalculateBoardsHit(Job* _job);
 
-    int m_calculateHitBoardsJobID;
+    // The Job ID for the currently running job calculating which boards are hit
+    int m_calculateHitBoardsJobID = -1;
 
     /**
      * @brief A Job has a state change

@@ -67,8 +67,14 @@ public:
     void SetProgress(float _progress);
 
     /**
-     * @brief End the job with the given state
+     * @brief End the job with the given state. Does not stop the thread! Use RequestStop instead.
      * @param _endState Ideally CANCELLED, FINISHED, or FAILED
      */
     void End(STATE _endState);
+
+    /**
+     * @brief Trigger the thread's stop source to internally handle how to stop
+     * @return Whether the stop request was successfully made
+     */
+    bool RequestStop();
 };

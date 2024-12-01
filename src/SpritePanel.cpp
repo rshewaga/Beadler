@@ -1,6 +1,10 @@
 #include <SpritePanel.hpp>
-#include <wx/utils.h>
+
 #include <string>
+
+#include <wx/utils.h>
+#include <fmt/format.h>
+
 
 SpritePanel::SpritePanel(wxWindow* _parent) : wxPanel(_parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)//, wxWANTS_CHARS)
 {
@@ -27,6 +31,12 @@ void SpritePanel::Init(std::shared_ptr<int> _scale)
 
 bool SpritePanel::LoadSprite(const std::filesystem::path &_path)
 {
+    // Stop the previously running job for calculating hit boards, if it exists
+    if(m_calculateHitBoardsJobID > -1)
+    {
+        JobManager::Inst().GetJobByID(m_calculateHitBoardsJobID)->RequestStop();
+    }
+
     if(loadedImg != nullptr)
     {
         loadedImg.reset();
@@ -58,7 +68,7 @@ bool SpritePanel::LoadSprite(const std::filesystem::path &_path)
     AutoFitCanvas();
     CenterSprite();
 
-    Job* _hitBoardJob = JobManager::Inst().GetJobByID(JobManager::Inst().CreateJob("Calculate hit boards"));
+    Job* _hitBoardJob = JobManager::Inst().GetJobByID(JobManager::Inst().CreateJob(fmt::format("Calculate hit boards: {}", _path.stem().string())));
     _hitBoardJob->Begin(&SpritePanel::Thread_CalculateBoardsHit, this, _hitBoardJob);
     m_calculateHitBoardsJobID = _hitBoardJob->m_ID;
 
@@ -254,7 +264,7 @@ void SpritePanel::Thread_CalculateBoardsHit(Job* _job)
         wxLogStatus("Recalculating finished");
     }
 
-    (void)_alpha;
+    _job->End(Job::STATE::FINISHED);
 }
 
 void SpritePanel::OnJobStateChanged(const Event_JobStateChanged &_event)

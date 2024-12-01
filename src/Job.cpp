@@ -49,3 +49,8 @@ void Job::End(STATE _endState)
 
     SetState(_endState);
 }
+
+bool Job::RequestStop()
+{
+    return m_thread.get_stop_source().request_stop();
+}
